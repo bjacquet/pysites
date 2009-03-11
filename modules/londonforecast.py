@@ -16,10 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import string,logging
+import logging, string
+from urlparse import urlsplit
+
 from weather import Weather
 from rhbase import ReqHBase
-from urlparse import urlsplit
+
 
 html = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
