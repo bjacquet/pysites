@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import cgi, logging, string, time, urlparse
+import cgi, logging, string, sys, time, urlparse
 from os import curdir, sep
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
@@ -24,32 +24,40 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 class PyHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
+        urlsplited = urlparse.urlsplit(self.path)
+        self.path = urlsplited[2]
+
         try:
-            if self.path.endswith(".html"):
-                f = open(curdir + sep + self.path) #self.path /index.html
+            if self.path.endswith(".xhtml"):
+                f = open(curdir + sep + self.path)
                 self.send_response(200)
-                self.send_header('Content-type',	'text/html')
+                self.send_header('Content-type', 'text/html')
                 self.end_headers()
                 self.wfile.write(f.read())
                 f.close()
                 return 
-            elif self.path.endswith(".sth"):   #dynamic 
+            elif self.path.endswith(".aspx"):   #dynamic 
                 self.send_response(200)
-                self.send_header('Content-type',	'text/html')
+                self.send_header('Content-type', 'text/html')
                 self.end_headers()
                 self.wfile.write("today " + str(time.localtime()[7]))
                 self.wfile.write("year " + str(time.localtime()[0]))
                 return
-            else:
+            elif self.path.endswith(".html"):
+                function = self.path.split('/')[-1]
+                module = self.path.replace(function, '')[1:-1].replace('/', '.')
+                function = function[:-5]
                 self.send_response(200)
-                self.send_header('Content-type',	'text/html')
+                self.send_header('Content-type', 'text/html')
                 self.end_headers()
-                func = self.load(urlparse.urlsplit(self.path)[2].replace('.py', ''))
-                self.wfile.write(func(self.path))
+                func = self.load(module)
+                self.wfile.write(func(function, urlsplited[3]))
+                return
+            else:
                 return
                 
         except IOError:
-            self.send_error(404,'File Not Found: %s' % self.path)
+            self.send_error(404,'File Not Found: %s' % path)
         except ImportError, e:
             self.send_error(404,'File Not Found: %s' % e)
 
@@ -73,7 +81,7 @@ class PyHandler(BaseHTTPRequestHandler):
     def load(self, req_path):
         logging.debug("load() called for '%s'" % req_path)
         m = dfunc = None
-        mpath = 'modules.%s' % '.'.join(filter(None, req_path.split('/')[:-1]))
+        mpath = 'modules.%s' % req_path
         try: 
             m = __import__(mpath, globals(), locals(), ['ReqH'])
         except ImportError, e: 
@@ -94,6 +102,7 @@ class PyHandler(BaseHTTPRequestHandler):
 
 
 def main(): 
+    sys.path.append('modules')
     logf = logging.Formatter('** %(asctime)s %(levelname)s - %(message)s')
     lcon = logging.StreamHandler()
     lcon.setFormatter(logf)
@@ -101,7 +110,7 @@ def main():
     logging.getLogger('').setLevel(logging.DEBUG)
     logging.info('starting server..')
     try:
-        server = HTTPServer(('', 8080), PyHandler)
+        server = HTTPServer(('', 80), PyHandler)
         print 'started httpserver...'
         server.serve_forever()
     except KeyboardInterrupt:

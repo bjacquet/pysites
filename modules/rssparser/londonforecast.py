@@ -19,7 +19,7 @@
 import logging, string
 from urlparse import urlsplit
 
-from weather import Weather
+from bbcweatherforecast import BBCWeatherForecast
 from rhbase import ReqHBase
 
 
@@ -27,16 +27,17 @@ html = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Next 3 days forecast</title>
+    <title>London 3 days forecast</title>
   </head>
   <body>
-    <h1>London weather forecast</h1>
-    <h2>Today</h2>
-    <p><strong>{today}:</strong> {forecasttoday}</p>
-    <h2>Tomorrow</h2>
-    <p><strong>{tomorrow}:</strong> {forecasttomorrow}</p>
-    <h2>After Tomorrow</h2>
-    <p><strong>{aftertomorrow}:</strong> {forecastaftertomorrow}</p>
+    <h1>{title}</h1>
+    <h2>{day1}</h2>
+    <p>{day1forecast}</p>
+    <h2>{day2}</h2>
+    <p>{day2forecast}</p>
+    <h2>{day3}</h2>
+    <p>{day2forecast}</p>
+    <p>Last updated: {lastBuildDate}</p>
   </body>
 </html>
 """
@@ -46,16 +47,17 @@ class ReqH(ReqHBase):
 
     @staticmethod
     def do_purge(req=None):
-        logging.info("do_purge() called for params: '%s'" % urlsplit(req)[3])
-        londonweather = Weather()
-        retpage = html.replace('{today}', londonweather.today)
-        retpage = retpage.replace('{forecasttoday}',
-                                  londonweather.forecasttoday)
-        retpage = retpage.replace('{tomorrow}', londonweather.tomorrow)
-        retpage = retpage.replace('{forecasttomorrow}',
-                                  londonweather.forecasttomorrow)
-        retpage = retpage.replace('{aftertomorrow}',
-                                  londonweather.aftertomorrow)
-        retpage = retpage.replace('{forecastaftertomorrow}', 
-                                  londonweather.forecastaftertomorrow)
-        return retpage
+        logging.info("do_purge() called for params: '%s'" % req)
+
+        londonweather = BBCWeatherForecast("http://feeds.bbc.co.uk/weather/feeds/rss/5day/world/8.xml")
+        londonweather.parseFeed(True)
+
+        retpage = html.replace('{title}', londonweather.title)
+        retpage = retpage.replace('{day1}', londonweather.day1)
+        retpage = retpage.replace('{day1forecast}', londonweather.day1forecast)
+        retpage = retpage.replace('{day2}', londonweather.day2)
+        retpage = retpage.replace('{day2forecast}', londonweather.day2forecast)
+        retpage = retpage.replace('{day3}', londonweather.day3)
+        retpage = retpage.replace('{day3forecast}', londonweather.day3forecast)
+        retpage = retpage.replace('{lastBuildDate}', londonweather.lastBuildDate)
+        return retpage.encode('latin-1')

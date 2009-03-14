@@ -20,17 +20,22 @@ import logging, urlparse
 
 class ReqHBase(object):
     @classmethod
-    def dispatch(cls, req):
+    def dispatch(cls, func, req):
         result = -1
-        targetf = 'do_%s' % urlparse.urlsplit(req)[2].split('/')[-1]
+        logging.info(func)
+        logging.info(req)
+        targetf = 'do_%s' % func
 
-        try: handler = getattr(cls, targetf)
+        try: 
+            handler = getattr(cls, targetf)
         except AttributeError:
             logging.error("no '%s' function in '%s'" % (targetf, str(cls)))
         else: # is it a function?
             if callable(handler):
-                try: result = handler(req)
-                except Exception, e: logging.exception(str(e))
+                try: 
+                    result = handler(req)
+                except Exception, e: 
+                    logging.exception(str(e))
             else:
                 logging.error("'%s' not callable in '%s'" % (targetf, str(cls)))
         return(result)

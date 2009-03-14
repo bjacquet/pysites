@@ -35,12 +35,12 @@ class Weather():
       self.lastupdated = item['pubDate']
       weather.append(item['title'].split(',')[0])
 
-    self.today = weather[0].split()[0][:-1]
-    self.tomorrow = weather[1].split()[0][:-1]
-    self.aftertomorrow = weather[2].split()[0][:-1]
-    self.forecasttoday = weather[0].split()[1]+' '+weather[0].split()[2]
-    self.forecasttomorrow = weather[1].split()[1]+' '+weather[1].split()[2]
-    self.forecastaftertomorrow = weather[2].split()[1]+' '+weather[2].split()[2]
+    self.today = weather[0].split(':')[0]
+    self.tomorrow = weather[1].split(':')[0]
+    self.aftertomorrow = weather[2].split(':')[0]
+    self.forecasttoday = weather[0].split(':')[1]
+    self.forecasttomorrow = weather[1].split(':')[1]
+    self.forecastaftertomorrow = weather[2].split(':')[1]
 
   def _get_today(self):
     return self._today
