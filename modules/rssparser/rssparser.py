@@ -17,13 +17,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from lxml import etree
-from urllib import urlopen
 from StringIO import StringIO
+from urllib import urlopen
 
 
 class RSSParser():
-    """Parser handler class for parsing rss feeds"""
+    u"""Base parser handler class for parsing rss feeds
 
+    Contents:
+    - `tags`: the XML tags to find and pare.
+    - `urlfeed`: the URL for the RSS feed
+
+"""
     def __init__(self):
         pass
 
@@ -43,6 +48,13 @@ class RSSParser():
     urlfeed = property(_get_urlfeed, _set_urlfeed)
 
     def parseFeed(self, child=False):
+        u"""Parses the feed and returns a dictionary with the tags text and 
+attributes.
+
+    Arguments:
+    - `child`: boolean to parse the first degree children of each tag
+
+"""
         if self.tags is None or self.urlfeed is None:
             return None
         rssfeed = urlopen(self.urlfeed)

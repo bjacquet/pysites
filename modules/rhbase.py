@@ -16,11 +16,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import logging, urlparse
+import logging
+import urlparse
+
 
 class ReqHBase(object):
+    u"""Request Handler Base class.
+
+    Base class to be inherited.
+
+    Contents:
+    - `dispatch`: method that returns the execution of the requested function.
+
+"""
+
     @classmethod
     def dispatch(cls, func, req):
+        u"""Returns the execution of the given function with the given request 
+arguments.
+
+    Arguments:
+    - `cls`: the class where do_`func` is defined.
+    - `func`: the function name.
+    - `req`: the do_`func` argument.
+
+"""
         result = -1
         logging.info(func)
         logging.info(req)

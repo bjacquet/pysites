@@ -20,7 +20,7 @@ from rssparser import RSSParser
 
 
 class BBCWeatherForecast(RSSParser):
-    """Parser handler class for the BBC Weather RSS fedd"""
+    u"""Parser handler class for the BBC Weather RSS fedd"""
 
     __title = '/rss/channel/title'
     __lastBuildDate = '/rss/channel/lastBuildDate'
@@ -40,6 +40,8 @@ class BBCWeatherForecast(RSSParser):
 
     def _setValues(self):
         self.day1 = self._get_children_node_text(self.__day1, 'title')
+        self.day2 = self._get_children_node_text(self.__day2, 'title')
+        self.day3 = self._get_children_node_text(self.__day3, 'title')
 
     def _get_text(self, tag):
         return tag['text']
@@ -57,14 +59,19 @@ class BBCWeatherForecast(RSSParser):
         return self._day1
 
     def _set_day1(self, value):
-        #self._day1 = value.replace(u'\xb0', u'00B0')
-        self._day1 = value#.replace(u'\xb0', u'deg')
+        self._day1 = value
 
     def _get_day2(self):
-        return self._get_children_node_text(self.__day2, 'title')
+        return self.day2
+
+    def _set_day2(self, value):
+        self._day2 = value
 
     def _get_day3(self):
-        return self._get_children_node_text(self.__day3, 'title')
+        return self.day3
+
+    def _set_day3(self, value):
+        self._day3 = value
 
     def _get_day1forecast(self):
         return self._get_children_node_text(self.__day1, 'description')
@@ -76,8 +83,8 @@ class BBCWeatherForecast(RSSParser):
         return self._get_children_node_text(self.__day3, 'description')
 
     day1 = property(_get_day1, _set_day1)
-    day2 = property(_get_day2)
-    day3 = property(_get_day3)
+    day2 = property(_get_day2, _set_day2)
+    day3 = property(_get_day3, _set_day3)
     day1forecast = property(_get_day1forecast)
     day2forecast = property(_get_day2forecast)
     day3forecast = property(_get_day3forecast)

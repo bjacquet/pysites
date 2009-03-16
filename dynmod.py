@@ -16,14 +16,44 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import logging, time, urlparse
+import logging
+import time
+import urlparse
+
 
 class Dynmod(object):
+    u"""Dynmod class, dynamic module loading.
+
+    Loads modules dynamically and makes available the requested function. A 
+    module is loaded by invoking the `load` method and is kept in memory. Any 
+    `load` invocation that occurs, for the same module, within 100 seconds from 
+    the last one will use the method kept in memory. The first invocation prior 
+    to that will reload the module.
+
+    Contents:
+    - `self.modules`: a dictionary variable that keeps track of previously 
+    loaded modules, their time of loading and the requested function.
+    - `load`: method to load the module and get the `dispatch` function.
+
+"""
+
     def __init__(self):
         self.modules = dict()
 
     def load(self, modulepath, classname):
-        logging.debug("load() called for '%s'" % modulepath)
+        u"""Returns the `dispatch` method from the given class in the given 
+module.
+
+    The `dispatch` funcion is a general purpose function that every given class 
+    in the given method must define.
+
+    Arguments:
+    - `modulepath`: the module to be loaded, it's namespace must reflect the 
+file and folder hierarchy.
+    - `classname`: the class name, defined in the module.
+
+"""
+        logging.debug("load() called for '%s' and '%s'" % (modulepath, classname))
         module = dfunc = None
 
         # already have the module needed?
@@ -58,4 +88,3 @@ class Dynmod(object):
             self.modules[module.__name__] = (module, time.localtime(), dfunc)
 
         return dfunc
-

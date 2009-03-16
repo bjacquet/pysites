@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import logging, string
+import logging
+import string
 from urlparse import urlsplit
-
 from bbcweatherforecast import BBCWeatherForecast
 from rhbase import ReqHBase
 
@@ -36,11 +36,12 @@ html = """
     <h2>{day2}</h2>
     <p>{day2forecast}</p>
     <h2>{day3}</h2>
-    <p>{day2forecast}</p>
+    <p>{day3forecast}</p>
     <p>Last updated: {lastBuildDate}</p>
   </body>
 </html>
 """
+
 
 class ReqH(ReqHBase):
     do_nothing = 0

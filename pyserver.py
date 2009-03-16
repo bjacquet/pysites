@@ -16,14 +16,50 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import cgi, logging, string, sys, time, urlparse
+import cgi
+import logging
+import string
+import sys
+import time
+import urlparse
 from os import curdir, sep
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
+import dynmod
 
-class PyHandler(BaseHTTPRequestHandler):
 
+class PyServer():
+    u"""PyServer class.
+
+    Allows an instance of a PyHandler class to have a persistent Dynmod class 
+    instance between requests.
+
+    Contents:
+    - `modules`: a Dynmod class instance
+
+"""
+    modules = dynmod.Dynmod()
+
+
+class PyHandler(BaseHTTPRequestHandler, PyServer):    
+    u"""PyHandler class, inheritages the BaseHTTOReqyestHandler and PyServer 
+    classes.
+
+    For `xhtml` files returns the respective page. The handling of `aspx` files 
+    it's a bit of a joke, doesn't do anything. The `html` files are generated 
+    when the GET request takes places. The `modules` attribute herited from 
+    the PyServer class keeps a cache os previously generated pages.
+    
+    Contents:
+    - `do_Get`: method that handles the GET requests.
+    - `do_Post`: method that handles the POST requests.
+
+    """
     def do_GET(self):
+        u"""Method to handle the GET requests of `xhtml`, `aspx` and `html` 
+    files.
+
+    """
         urlsplited = urlparse.urlsplit(self.path)
         self.path = urlsplited[2]
 
@@ -50,7 +86,7 @@ class PyHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-                func = self.load(module)
+                func = self.modules.load(module, 'ReqH')
                 self.wfile.write(func(function, urlsplited[3]))
                 return
             else:
@@ -62,6 +98,11 @@ class PyHandler(BaseHTTPRequestHandler):
             self.send_error(404,'File Not Found: %s' % e)
 
     def do_POST(self):
+        u"""Method to handle the POST requests.
+
+    It's just a scaffold, doesn't do anything yet.
+
+    """
         global rootnode
         try:
             ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
@@ -78,31 +119,15 @@ class PyHandler(BaseHTTPRequestHandler):
         except :
             pass
 
-    def load(self, req_path):
-        logging.debug("load() called for '%s'" % req_path)
-        m = dfunc = None
-        mpath = 'modules.%s' % req_path
-        try: 
-            m = __import__(mpath, globals(), locals(), ['ReqH'])
-        except ImportError, e: 
-            logging.error(str(e))
-            raise ImportError, 'Feature not implemented (yet)'
 
-        if m:
-            # got the module, does it have a 'ReqH' class?
-            if hasattr(m, 'ReqH'):
-                # yes, does the 'ReqH' class have a dispatch function?
-                if hasattr(m.ReqH, 'dispatch') and callable(m.ReqH.dispatch):
-                    dfunc = m.ReqH.dispatch
-                else: 
-                    logging.error("no dispatch function in '%s'" % mpath)
-            else: 
-                logging.error("no request handler class in '%s'" % mpath)
-        return dfunc
+def main(cwd='.'):
+    u"""Execution start point.
 
+    Arguments:
+    - `cwd`: the directory where this source file is located
 
-def main(): 
-    sys.path.append('modules')
+    """
+    sys.path.append('%s/modules' % cwd)
     logf = logging.Formatter('** %(asctime)s %(levelname)s - %(message)s')
     lcon = logging.StreamHandler()
     lcon.setFormatter(logf)
@@ -110,12 +135,13 @@ def main():
     logging.getLogger('').setLevel(logging.DEBUG)
     logging.info('starting server..')
     try:
-        server = HTTPServer(('', 80), PyHandler)
+        server = HTTPServer(('', 8080), PyHandler)
         print 'started httpserver...'
         server.serve_forever()
     except KeyboardInterrupt:
         print '^C received, shutting down server'
         server.socket.close()
+
 
 if __name__ == '__main__':
     main()
